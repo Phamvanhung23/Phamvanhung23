@@ -6,11 +6,12 @@
     <title>Đọc Truyện</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             background: #121212;
-            color: #fff;
-            text-align: center;
+            color: white;
+            margin: 0;
             padding: 20px;
+            text-align: center;
         }
         .content-container {
             background: #1e1e1e;
@@ -19,10 +20,13 @@
             max-width: 800px;
             margin: auto;
         }
+        h1 {
+            color: #ff9800;
+        }
         button {
             background: #ff9800;
             color: white;
-            padding: 10px;
+            padding: 10px 20px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
@@ -36,15 +40,53 @@
     </div>
     <button onclick="history.back()">🔙 Quay lại</button>
 
-    <script>
-        // Lấy dữ liệu từ URL
-        const params = new URLSearchParams(window.location.search);
-        const storyTitle = params.get("title") || "Không có tiêu đề";
-        const storyContent = params.get("content") || "Không có nội dung";
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Hiển thị nội dung an toàn bằng textContent
-        document.getElementById("storyTitle").textContent = storyTitle;
-        document.getElementById("storyContent").textContent = storyContent;
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
+            authDomain: "taixiu-c7b03.firebaseapp.com",
+            projectId: "taixiu-c7b03",
+            storageBucket: "taixiu-c7b03.appspot.com",
+            messagingSenderId: "383499200994",
+            appId: "1:383499200994:web:063ad8fced715310eff1bb"
+        };
+
+        // Khởi tạo Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Lấy ID truyện từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get('id');
+
+        // Hàm tải nội dung truyện từ Firestore
+        async function loadStory() {
+            if (storyId) {
+                try {
+                    const storyRef = doc(db, "stories", storyId);
+                    const storySnap = await getDoc(storyRef);
+
+                    if (storySnap.exists()) {
+                        const story = storySnap.data();
+                        document.getElementById("storyTitle").textContent = story.title || "Không có tiêu đề";
+                        document.getElementById("storyContent").textContent = story.content || "Không có nội dung";
+                    } else {
+                        document.getElementById("storyTitle").textContent = "Truyện không tồn tại!";
+                    }
+                } catch (error) {
+                    document.getElementById("storyTitle").textContent = "Lỗi tải truyện!";
+                    console.error("Lỗi khi tải truyện:", error);
+                }
+            } else {
+                document.getElementById("storyTitle").textContent = "ID truyện không hợp lệ!";
+            }
+        }
+
+        loadStory();
     </script>
 </body>
 </html>

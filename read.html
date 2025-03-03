@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đọc Truyện</title>
+</head>
+<body>
+    <h1 id="story-title">Đang tải...</h1>
+    <p id="story-description"></p>
+    <hr>
+    <p id="story-content"></p>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = { /* Dùng config Firebase của bạn */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Lấy ID truyện từ URL
+        const params = new URLSearchParams(window.location.search);
+        const storyId = params.get("id");
+
+        async function loadStory() {
+            if (!storyId) {
+                document.getElementById("story-title").innerText = "Không tìm thấy truyện!";
+                return;
+            }
+
+            const storyRef = doc(db, "stories", storyId);
+            const storySnap = await getDoc(storyRef);
+
+            if (storySnap.exists()) {
+                const story = storySnap.data();
+                document.getElementById("story-title").innerText = story.title;
+                document.getElementById("story-description").innerText = story.description;
+                document.getElementById("story-content").innerHTML = story.content.replace(/\n/g, "<br>");
+            } else {
+                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
+            }
+        }
+
+        loadStory();
+    </script>
+</body>
+</html>

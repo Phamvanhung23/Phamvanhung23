@@ -4,45 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đọc Truyện</title>
+    <style>
+        body {
+            background: #121212;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .story {
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #6200ea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-    <h1 id="story-title">Đang tải...</h1>
-    <p id="story-description"></p>
-    <hr>
+<h1 id="story-title">Đang tải...</h1>
+<div class="story">
     <p id="story-content"></p>
+</div>
+<button onclick="goBack()">⬅ Quay lại</button>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const firebaseConfig = { /* Dùng config Firebase của bạn */ };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
+        authDomain: "taixiu-c7b03.firebaseapp.com",
+        projectId: "taixiu-c7b03",
+    };
 
-        // Lấy ID truyện từ URL
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadStory() {
         const params = new URLSearchParams(window.location.search);
-        const storyId = params.get("id");
+        const storyId = params.get("storyId");
 
-        async function loadStory() {
-            if (!storyId) {
-                document.getElementById("story-title").innerText = "Không tìm thấy truyện!";
-                return;
-            }
-
-            const storyRef = doc(db, "stories", storyId);
-            const storySnap = await getDoc(storyRef);
-
-            if (storySnap.exists()) {
-                const story = storySnap.data();
-                document.getElementById("story-title").innerText = story.title;
-                document.getElementById("story-description").innerText = story.description;
-                document.getElementById("story-content").innerHTML = story.content.replace(/\n/g, "<br>");
-            } else {
-                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
-            }
+        if (!storyId) {
+            document.body.innerHTML = "<h2>Truyện không tồn tại!</h2>";
+            return;
         }
 
-        loadStory();
-    </script>
+        const storyRef = doc(db, "stories", storyId);
+        const storySnap = await getDoc(storyRef);
+
+        if (storySnap.exists()) {
+            const story = storySnap.data();
+            document.getElementById("story-title").innerText = story.title;
+            document.getElementById("story-content").innerText = story.content;
+        } else {
+            document.body.innerHTML = "<h2>Truyện không tồn tại!</h2>";
+        }
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+
+    loadStory();
+</script>
 </body>
 </html>

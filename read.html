@@ -50,7 +50,6 @@
             appId: "1:383499200994:web:063ad8fced715310eff1bb"
         };
 
-        // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -58,39 +57,24 @@
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
 
-        // Hàm hiển thị nội dung truyện
+        // Hiển thị nội dung truyện
         async function loadStory() {
-            console.log("Hàm loadStory() được gọi");
-
-            // Xóa nội dung cũ trước khi tải mới
-            document.getElementById("story-title").innerText = "Đang tải...";
-            document.getElementById("story-description").innerText = "";
-            document.getElementById("story-content").innerText = "";
-
             if (storyId) {
-                try {
-                    const storyRef = doc(db, "stories", storyId);
-                    const storySnap = await getDoc(storyRef);
+                const storyRef = doc(db, "stories", storyId);
+                const storySnap = await getDoc(storyRef);
 
-                    if (storySnap.exists()) {
-                        const story = storySnap.data();
-                        document.getElementById("story-title").innerText = story.title;
-                        document.getElementById("story-description").innerText = story.description;
-                        document.getElementById("story-content").innerText = story.content;
-                    } else {
-                        document.getElementById("story-title").innerText = "Truyện không tồn tại!";
-                    }
-                } catch (error) {
-                    console.error("Lỗi khi tải truyện:", error);
-                    document.getElementById("story-title").innerText = "Lỗi khi tải truyện!";
+                if (storySnap.exists()) {
+                    const story = storySnap.data();
+                    document.getElementById("story-title").innerText = story.title;
+                    document.getElementById("story-description").innerText = story.description;
+                    document.getElementById("story-content").textContent = story.content;
+                } else {
+                    document.getElementById("story-title").innerText = "Truyện không tồn tại!";
                 }
-            } else {
-                document.getElementById("story-title").innerText = "Không tìm thấy ID truyện!";
             }
         }
 
-        // Chỉ gọi hàm loadStory() một lần khi trang được tải
-        window.onload = loadStory;
+        loadStory();
     </script>
 </body>
 </html>

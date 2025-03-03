@@ -6,21 +6,25 @@
     <title>Đọc Truyện</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
             margin: 0;
             padding: 20px;
             text-align: center;
+            color: white;
         }
         .container {
             max-width: 800px;
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             margin: auto;
+            color: black;
+            animation: fadeIn 0.8s ease-in-out;
         }
         h1 {
+            font-size: 24px;
             color: #333;
         }
         p {
@@ -30,17 +34,25 @@
         }
         .back-btn {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 12px 20px;
             background: #007bff;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
             margin-top: 20px;
             cursor: pointer;
             border: none;
+            transition: 0.3s;
         }
         .back-btn:hover {
             background: #0056b3;
+            transform: scale(1.05);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -53,7 +65,6 @@
 
         <!-- Nút quay lại -->
         <button class="back-btn" onclick="history.back()">⬅ Quay lại</button>
-        <a href="index.html" class="back-btn">🏠 Trang chủ</a>
     </div>
 
     <script type="module">

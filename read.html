@@ -6,102 +6,58 @@
     <title>Đọc Truyện</title>
     <style>
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            margin: 0;
-            padding: 20px;
-            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
             color: white;
-        }
-        .container {
             max-width: 800px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             margin: auto;
-            color: black;
-            animation: fadeIn 0.8s ease-in-out;
+            padding: 20px;
         }
-        h1 {
-            font-size: 24px;
-            color: #333;
-        }
-        p {
-            text-align: justify;
-            line-height: 1.6;
-            padding: 10px;
-        }
-        .back-btn {
-            display: inline-block;
-            padding: 12px 20px;
-            background: #007bff;
+        h1 { color: #ff9800; }
+        p { line-height: 1.6; }
+        button {
+            background-color: #6200ea;
             color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 20px;
-            cursor: pointer;
+            padding: 10px 20px;
             border: none;
-            transition: 0.3s;
-        }
-        .back-btn:hover {
-            background: #0056b3;
-            transform: scale(1.05);
-        }
-        .loading {
-            font-style: italic;
-            color: gray;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="story-title" class="loading">Đang tải...</h1>
-        <p id="story-description"></p>
-        <hr>
-        <p id="story-content"></p>
-
-        <!-- Nút quay lại -->
-        <button class="back-btn" onclick="history.back()">⬅ Quay lại</button>
-    </div>
+    <h1 id="story-title">Đang tải...</h1>
+    <p id="story-description"></p>
+    <hr>
+    <div id="story-content"></div>
+    <button onclick="history.back()">⬅ Quay lại</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Cấu hình Firebase
-        const firebaseConfig = { 
-            apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
+        const firebaseConfig = {
+            apiKey: "API_KEY_HERE",
             authDomain: "taixiu-c7b03.firebaseapp.com",
-            projectId: "taixiu-c7b03",
+            projectId: "taixiu-c7b03"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Lấy ID truyện từ URL
         const params = new URLSearchParams(window.location.search);
-        const storyId = params.get("id");
+        const storyId = params.get("storyId");
 
         async function loadStory() {
-            if (!storyId) {
-                document.getElementById("story-title").innerText = "Không tìm thấy truyện!";
-                return;
-            }
+            if (!storyId) return;
 
             const storyRef = doc(db, "stories", storyId);
             const storySnap = await getDoc(storyRef);
 
             if (storySnap.exists()) {
                 const story = storySnap.data();
-                document.getElementById("story-title").innerText = story.title;
-                document.getElementById("story-description").innerText = story.description || "Không có mô tả.";
+                document.getElementById("story-title").innerText = story.title || "Không có tiêu đề";
+                document.getElementById("story-description").innerText = story.description || "Không có mô tả";
                 document.getElementById("story-content").innerHTML = story.content?.replace(/\n/g, "<br>") || "Nội dung đang cập nhật...";
             } else {
                 document.getElementById("story-title").innerText = "Truyện không tồn tại!";

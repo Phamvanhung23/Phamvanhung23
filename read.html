@@ -7,71 +7,34 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #1e1e2f;
+            background: #121212;
             color: white;
             margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        header {
-            background-color: #333;
-            padding: 15px;
-        }
-        h1 {
-            color: #ff9800;
-            margin: 20px 0;
-        }
-        p {
-            line-height: 1.6;
-            white-space: pre-wrap;
-            margin: 10px 20px;
-        }
-        button {
-            background-color: #007bff;
-            border: none;
-            padding: 10px 20px;
-            margin: 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            color: white;
-            font-size: 1em;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
             padding: 20px;
         }
-        hr {
-            border: 1px solid #444;
-            margin: 20px 0;
-        }
-        .not-found {
-            color: #ff4d4d;
-            font-size: 1.5em;
+        h1 { color: #ff9800; }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #6200ea;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <header>
-        <button onclick="window.location.href='index.html'">⬅ Quay lại</button>
-    </header>
-    
-    <div class="container">
-        <h1 id="story-title">Đang tải...</h1>
-        <p id="story-description"></p>
-        <hr>
-        <p id="story-content"></p>
-    </div>
+    <button onclick="window.location.href='index.html'">⬅ Quay lại</button>
+    <h1 id="story-title">Đang tải...</h1>
+    <p id="story-description"></p>
+    <hr>
+    <p id="story-content"></p>
 
     <script type="module">
-        // Import Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Cấu hình Firebase
+        // Firebase Config (sử dụng lại cấu hình cũ)
         const firebaseConfig = {
             apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
             authDomain: "taixiu-c7b03.firebaseapp.com",
@@ -81,36 +44,34 @@
             appId: "1:383499200994:web:063ad8fced715310eff1bb"
         };
 
-        // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Hàm tải nội dung truyện
-        async function loadStory() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const storyId = urlParams.get('storyId');
+        // Lấy ID truyện từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get("id");
 
-            if (storyId) {
-                const storyRef = doc(db, "stories", storyId);
-                const storySnap = await getDoc(storyRef);
+        // Hiển thị nội dung truyện
+        async function loadStory(storyId) {
+            if (!storyId) {
+                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
+                return;
+            }
 
-                if (storySnap.exists()) {
-                    const story = storySnap.data();
-                    document.getElementById("story-title").innerText = story.title;
-                    document.getElementById("story-description").innerText = story.description;
-                    document.getElementById("story-content").innerHTML = story.content.replace(/\n/g, "<br>");
-                } else {
-                    document.getElementById("story-title").innerText = "Truyện không tồn tại!";
-                    document.getElementById("story-description").innerText = "";
-                    document.getElementById("story-content").innerHTML = '<p class="not-found">Không tìm thấy nội dung truyện.</p>';
-                }
+            const storyRef = doc(db, "stories", storyId);
+            const storySnap = await getDoc(storyRef);
+
+            if (storySnap.exists()) {
+                const story = storySnap.data();
+                document.getElementById("story-title").innerText = story.title;
+                document.getElementById("story-description").innerText = story.description;
+                document.getElementById("story-content").innerText = story.content;
             } else {
-                document.getElementById("story-title").innerText = "Không có ID truyện!";
+                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
             }
         }
 
-        // Gọi hàm khi tải trang
-        loadStory();
+        loadStory(storyId);
     </script>
 </body>
 </html>

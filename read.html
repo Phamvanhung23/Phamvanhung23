@@ -6,75 +6,45 @@
     <title>Đọc Truyện</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             background: #121212;
-            color: white;
-            margin: 0;
+            color: #fff;
+            text-align: center;
             padding: 20px;
         }
-        h1 {
-            color: #ff9800;
+        .content-container {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: auto;
         }
         button {
-            padding: 10px 20px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #6200ea;
+            background: #ff9800;
             color: white;
-        }
-        .story-content {
-            white-space: pre-wrap;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <button onclick="window.history.back()">⬅ Quay lại</button>
-    <h1 id="story-title">Đang tải...</h1>
-    <p id="story-description"></p>
-    <hr>
-    <p id="story-content" class="story-content"></p>
+    <h1 id="storyTitle">Đang tải...</h1>
+    <div class="content-container">
+        <p id="storyContent"></p>
+    </div>
+    <button onclick="history.back()">🔙 Quay lại</button>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <script>
+        // Lấy dữ liệu từ URL
+        const params = new URLSearchParams(window.location.search);
+        const storyTitle = params.get("title") || "Không có tiêu đề";
+        const storyContent = params.get("content") || "Không có nội dung";
 
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
-            authDomain: "taixiu-c7b03.firebaseapp.com",
-            projectId: "taixiu-c7b03",
-            storageBucket: "taixiu-c7b03.appspot.com",
-            messagingSenderId: "383499200994",
-            appId: "1:383499200994:web:063ad8fced715310eff1bb"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Lấy ID truyện từ URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const storyId = urlParams.get('id');
-
-        // Hiển thị nội dung truyện
-        async function loadStory() {
-            if (storyId) {
-                const storyRef = doc(db, "stories", storyId);
-                const storySnap = await getDoc(storyRef);
-
-                if (storySnap.exists()) {
-                    const story = storySnap.data();
-                    document.getElementById("story-title").innerText = story.title;
-                    document.getElementById("story-description").innerText = story.description;
-                    document.getElementById("story-content").textContent = story.content;
-                } else {
-                    document.getElementById("story-title").innerText = "Truyện không tồn tại!";
-                }
-            }
-        }
-
-        loadStory();
+        // Hiển thị nội dung an toàn bằng textContent
+        document.getElementById("storyTitle").textContent = storyTitle;
+        document.getElementById("storyContent").textContent = storyContent;
     </script>
 </body>
 </html>

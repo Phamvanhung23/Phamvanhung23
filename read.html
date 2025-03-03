@@ -4,71 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đọc Truyện</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            margin: auto;
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            text-align: justify;
-            line-height: 1.6;
-            padding: 10px;
-        }
-        .back-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .back-btn:hover {
-            background: #0056b3;
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1 id="story-title">Đang tải...</h1>
-        <p id="story-content"></p>
-        <a href="index.html" class="back-btn">Quay lại</a>
-    </div>
+    <h1 id="story-title">Đang tải...</h1>
+    <p id="story-description"></p>
+    <hr>
+    <p id="story-content"></p>
 
     <script type="module">
-        // Import Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Cấu hình Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
-            authDomain: "taixiu-c7b03.firebaseapp.com",
-            projectId: "taixiu-c7b03",
-        };
-
-        // Khởi tạo Firebase
+        const firebaseConfig = { /* Dùng config Firebase của bạn */ };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Hàm tải truyện từ Firestore
+        // Lấy ID truyện từ URL
+        const params = new URLSearchParams(window.location.search);
+        const storyId = params.get("id");
+
         async function loadStory() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const storyId = urlParams.get("storyId") || "example-story"; // Lấy ID từ URL
+            if (!storyId) {
+                document.getElementById("story-title").innerText = "Không tìm thấy truyện!";
+                return;
+            }
 
             const storyRef = doc(db, "stories", storyId);
             const storySnap = await getDoc(storyRef);
@@ -76,13 +35,13 @@
             if (storySnap.exists()) {
                 const story = storySnap.data();
                 document.getElementById("story-title").innerText = story.title;
-                document.getElementById("story-content").innerText = story.content;
+                document.getElementById("story-description").innerText = story.description;
+                document.getElementById("story-content").innerHTML = story.content.replace(/\n/g, "<br>");
             } else {
-                document.body.innerHTML = "<h2>Truyện không tìm thấy!</h2>";
+                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
             }
         }
 
-        // Gọi hàm để tải truyện
         loadStory();
     </script>
 </body>

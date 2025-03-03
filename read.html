@@ -3,124 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đọc Truyện - Web Truyện</title>
+    <title>Đọc Truyện</title>
     <style>
-        /* 🌟 Reset CSS */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
-        
-        /* 🌟 Nền trang */
         body {
-            background-color: #f4f4f4;
-            color: #333;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
             padding: 20px;
             text-align: center;
         }
-
-        /* 🌟 Container chính */
         .container {
             max-width: 800px;
-            margin: auto;
-            padding: 20px;
             background: white;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: left;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
         }
-
-        /* 🌟 Tiêu đề truyện */
         h1 {
-            font-size: 24px;
-            text-align: center;
-            color: #6200ea;
-            margin-bottom: 15px;
+            color: #333;
         }
-
-        /* 🌟 Nội dung truyện */
-        .story-content {
-            font-size: 18px;
-            line-height: 1.6;
+        p {
             text-align: justify;
+            line-height: 1.6;
             padding: 10px;
-            background: #fffbe6;
-            border-radius: 5px;
-            border-left: 4px solid #ff9800;
         }
-
-        /* 🌟 Nút điều hướng */
-        .buttons {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        button {
-            padding: 12px 18px;
-            font-size: 16px;
-            font-weight: bold;
-            background-color: #6200ea;
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
             color: white;
-            border: none;
+            text-decoration: none;
             border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
+            margin-top: 20px;
         }
-
-        button:hover {
-            background-color: #3700b3;
-        }
-
-        /* 🌙 Dark Mode */
-        .dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-        .dark-mode .container {
-            background: #1e1e1e;
-            color: #e0e0e0;
-        }
-
-        .dark-mode .story-content {
-            background: #2a2a2a;
-            border-left: 4px solid #ff9800;
-        }
-
-        .dark-mode button {
-            background-color: #ff9800;
-        }
-
-        .dark-mode button:hover {
-            background-color: #e68a00;
+        .back-btn:hover {
+            background: #0056b3;
         }
     </style>
 </head>
 <body>
-
-    <!-- 🌟 Nội dung chính -->
     <div class="container">
         <h1 id="story-title">Đang tải...</h1>
-        <p id="story-content" class="story-content"></p>
-
-        <!-- 🌟 Nút điều hướng -->
-        <div class="buttons">
-            <button onclick="goBack()">🔙 Quay lại</button>
-            <button onclick="toggleDarkMode()">🌙 Chế độ tối</button>
-        </div>
+        <p id="story-content"></p>
+        <a href="index.html" class="back-btn">Quay lại</a>
     </div>
 
-    <!-- 🚀 Firebase và JavaScript -->
     <script type="module">
-        import { db } from "./firebase.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // Cấu hình Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
+            authDomain: "taixiu-c7b03.firebaseapp.com",
+            projectId: "taixiu-c7b03",
+        };
+
+        // Khởi tạo Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Hàm tải truyện từ Firestore
         async function loadStory() {
             const urlParams = new URLSearchParams(window.location.search);
-            const storyId = urlParams.get("storyId");
-
-            if (!storyId) {
-                document.body.innerHTML = "<h2>Truyện không tồn tại!</h2>";
-                return;
-            }
+            const storyId = urlParams.get("storyId") || "example-story"; // Lấy ID từ URL
 
             const storyRef = doc(db, "stories", storyId);
             const storySnap = await getDoc(storyRef);
@@ -134,23 +82,8 @@
             }
         }
 
+        // Gọi hàm để tải truyện
         loadStory();
     </script>
-
-    <!-- 🚀 Nút quay lại và chế độ tối -->
-    <script>
-        function goBack() {
-            if (document.referrer) {
-                window.history.back();
-            } else {
-                window.location.href = "index.html"; // Thay bằng trang chính
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
-    </script>
-
 </body>
 </html>

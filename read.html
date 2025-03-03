@@ -12,29 +12,35 @@
             margin: 0;
             padding: 20px;
         }
-        h1 { color: #ff9800; }
+        h1 {
+            color: #ff9800;
+        }
         button {
             padding: 10px 20px;
+            margin: 10px 0;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             background-color: #6200ea;
             color: white;
         }
+        .story-content {
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
-    <button onclick="window.location.href='index.html'">⬅ Quay lại</button>
+    <button onclick="window.history.back()">⬅ Quay lại</button>
     <h1 id="story-title">Đang tải...</h1>
     <p id="story-description"></p>
     <hr>
-    <p id="story-content"></p>
+    <p id="story-content" class="story-content"></p>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase Config (sử dụng lại cấu hình cũ)
+        // Firebase Config (sử dụng lại config cũ)
         const firebaseConfig = {
             apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
             authDomain: "taixiu-c7b03.firebaseapp.com",
@@ -49,29 +55,26 @@
 
         // Lấy ID truyện từ URL
         const urlParams = new URLSearchParams(window.location.search);
-        const storyId = urlParams.get("id");
+        const storyId = urlParams.get('id');
 
         // Hiển thị nội dung truyện
-        async function loadStory(storyId) {
-            if (!storyId) {
-                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
-                return;
-            }
+        async function loadStory() {
+            if (storyId) {
+                const storyRef = doc(db, "stories", storyId);
+                const storySnap = await getDoc(storyRef);
 
-            const storyRef = doc(db, "stories", storyId);
-            const storySnap = await getDoc(storyRef);
-
-            if (storySnap.exists()) {
-                const story = storySnap.data();
-                document.getElementById("story-title").innerText = story.title;
-                document.getElementById("story-description").innerText = story.description;
-                document.getElementById("story-content").innerText = story.content;
-            } else {
-                document.getElementById("story-title").innerText = "Truyện không tồn tại!";
+                if (storySnap.exists()) {
+                    const story = storySnap.data();
+                    document.getElementById("story-title").innerText = story.title;
+                    document.getElementById("story-description").innerText = story.description;
+                    document.getElementById("story-content").innerText = story.content;
+                } else {
+                    document.getElementById("story-title").innerText = "Truyện không tồn tại!";
+                }
             }
         }
 
-        loadStory(storyId);
+        loadStory();
     </script>
 </body>
 </html>

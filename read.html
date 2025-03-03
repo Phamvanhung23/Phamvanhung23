@@ -4,18 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đọc Truyện</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            text-align: justify;
+            line-height: 1.6;
+            padding: 10px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+        }
+        .back-btn:hover {
+            background: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1 id="story-title">Đang tải...</h1>
-    <p id="story-description"></p>
-    <hr>
-    <p id="story-content"></p>
+    <div class="container">
+        <h1 id="story-title">Đang tải...</h1>
+        <p id="story-description"></p>
+        <hr>
+        <p id="story-content"></p>
+
+        <!-- Nút quay lại -->
+        <button class="back-btn" onclick="history.back()">⬅ Quay lại</button>
+        <a href="index.html" class="back-btn">🏠 Trang chủ</a>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const firebaseConfig = { /* Dùng config Firebase của bạn */ };
+        // Cấu hình Firebase
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
+            authDomain: "taixiu-c7b03.firebaseapp.com",
+            projectId: "taixiu-c7b03",
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 

@@ -15,7 +15,7 @@
         }
         .container {
             max-width: 800px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -50,6 +50,10 @@
             background: #0056b3;
             transform: scale(1.05);
         }
+        .loading {
+            font-style: italic;
+            color: gray;
+        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -58,7 +62,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="story-title">Đang tải...</h1>
+        <h1 id="story-title" class="loading">Đang tải...</h1>
         <p id="story-description"></p>
         <hr>
         <p id="story-content"></p>
@@ -97,8 +101,8 @@
             if (storySnap.exists()) {
                 const story = storySnap.data();
                 document.getElementById("story-title").innerText = story.title;
-                document.getElementById("story-description").innerText = story.description;
-                document.getElementById("story-content").innerHTML = story.content.replace(/\n/g, "<br>");
+                document.getElementById("story-description").innerText = story.description || "Không có mô tả.";
+                document.getElementById("story-content").innerHTML = story.content?.replace(/\n/g, "<br>") || "Nội dung đang cập nhật...";
             } else {
                 document.getElementById("story-title").innerText = "Truyện không tồn tại!";
             }

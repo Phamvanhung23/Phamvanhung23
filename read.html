@@ -40,7 +40,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase Config (sử dụng lại config cũ)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBjCTsrVxcRJfZIJmsddpEDKKPDndjqpxg",
             authDomain: "taixiu-c7b03.firebaseapp.com",
@@ -50,6 +50,7 @@
             appId: "1:383499200994:web:063ad8fced715310eff1bb"
         };
 
+        // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -57,24 +58,39 @@
         const urlParams = new URLSearchParams(window.location.search);
         const storyId = urlParams.get('id');
 
-        // Hiển thị nội dung truyện
+        // Hàm hiển thị nội dung truyện
         async function loadStory() {
-            if (storyId) {
-                const storyRef = doc(db, "stories", storyId);
-                const storySnap = await getDoc(storyRef);
+            console.log("Hàm loadStory() được gọi");
 
-                if (storySnap.exists()) {
-                    const story = storySnap.data();
-                    document.getElementById("story-title").innerText = story.title;
-                    document.getElementById("story-description").innerText = story.description;
-                    document.getElementById("story-content").innerText = story.content;
-                } else {
-                    document.getElementById("story-title").innerText = "Truyện không tồn tại!";
+            // Xóa nội dung cũ trước khi tải mới
+            document.getElementById("story-title").innerText = "Đang tải...";
+            document.getElementById("story-description").innerText = "";
+            document.getElementById("story-content").innerText = "";
+
+            if (storyId) {
+                try {
+                    const storyRef = doc(db, "stories", storyId);
+                    const storySnap = await getDoc(storyRef);
+
+                    if (storySnap.exists()) {
+                        const story = storySnap.data();
+                        document.getElementById("story-title").innerText = story.title;
+                        document.getElementById("story-description").innerText = story.description;
+                        document.getElementById("story-content").innerText = story.content;
+                    } else {
+                        document.getElementById("story-title").innerText = "Truyện không tồn tại!";
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi tải truyện:", error);
+                    document.getElementById("story-title").innerText = "Lỗi khi tải truyện!";
                 }
+            } else {
+                document.getElementById("story-title").innerText = "Không tìm thấy ID truyện!";
             }
         }
 
-        loadStory();
+        // Chỉ gọi hàm loadStory() một lần khi trang được tải
+        window.onload = loadStory;
     </script>
 </body>
 </html>

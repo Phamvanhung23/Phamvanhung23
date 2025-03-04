@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thông tin cá nhân</title>
-
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
 
     <style>
+        /* Giao diện tổng thể */
         body {
             background-color: #1c1b28;
             color: white;
@@ -29,6 +30,8 @@
             border-radius: 12px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
+
+        /* Avatar */
         .avatar-container {
             position: relative;
             width: 120px;
@@ -41,7 +44,9 @@
             cursor: pointer;
             transition: transform 0.3s ease-in-out;
         }
-        .avatar-container:hover { transform: scale(1.1); }
+        .avatar-container:hover {
+            transform: scale(1.1);
+        }
         .avatar-container img {
             width: 100%;
             height: 100%;
@@ -57,7 +62,11 @@
             font-size: 12px;
             padding: 5px;
         }
-        #avatarInput { display: none; }
+        #avatarInput {
+            display: none;
+        }
+
+        /* Giới tính */
         .gender-box {
             display: flex;
             justify-content: center;
@@ -77,8 +86,15 @@
             justify-content: center;
             gap: 5px;
         }
-        .gender-option:hover { background: #666; }
-        .selected { border: 2px solid #ffcc00; background: #555; }
+        .gender-option:hover {
+            background: #666;
+        }
+        .selected {
+            border: 2px solid #ffcc00;
+            background: #555;
+        }
+
+        /* Input và nút */
         input, button {
             width: 100%;
             padding: 12px;
@@ -99,7 +115,9 @@
             font-weight: bold;
             transition: 0.3s;
         }
-        button:hover { background: #836fff; }
+        button:hover {
+            background: #836fff;
+        }
     </style>
 </head>
 <body>
@@ -126,21 +144,6 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCCjtxygWLzP7NmgGESsOr6Gzo9FPXJil0",
-            authDomain: "taixiu-3de40.firebaseapp.com",
-            databaseURL: "https://taixiu-3de40-default-rtdb.firebaseio.com/",
-            projectId: "taixiu-3de40",
-            storageBucket: "taixiu-3de40.appspot.com",
-            messagingSenderId: "1091544270398",
-            appId: "1:1091544270398:web:09b020bac3b997b52bb36f",
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
         let selectedGender = "";
 
         function selectGender(gender) {
@@ -161,64 +164,63 @@
             }
         }
 
+        // 🔹 Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCjtxygWLzP7NmgGESsOr6Gzo9FPXJil0",
+            authDomain: "taixiu-3de40.firebaseapp.com",
+            databaseURL: "https://taixiu-3de40-default-rtdb.firebaseio.com/",
+            projectId: "taixiu-3de40",
+            storageBucket: "taixiu-3de40.appspot.com",
+            messagingSenderId: "1091544270398",
+            appId: "1:1091544270398:web:09b020bac3b997b52bb36f",
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // Lấy thông tin từ Firebase khi đăng nhập
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                console.log("Đã đăng nhập:", user.uid);
-                const usernameInput = document.getElementById("username");
-                let username = user.displayName || "";
-
-                try {
-                    const userDoc = await db.collection("users").doc(user.uid).get();
-                    if (userDoc.exists) {
-                        const data = userDoc.data();
-                        username = data.name || username;
-                        document.getElementById("dob").value = data.dob || "";
-                        document.getElementById("referral").value = data.referral || "";
-                        selectedGender = data.gender || "";
-
-                        if (selectedGender === "Nam") document.getElementById("male").classList.add("selected");
-                        if (selectedGender === "Nữ") document.getElementById("female").classList.add("selected");
-                        if (data.avatar) document.getElementById("avatarPreview").src = data.avatar;
-                    }
-                } catch (error) {
-                    console.error("Lỗi lấy dữ liệu:", error);
+                const displayName = user.displayName || "";
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    document.getElementById("username").value = data.name || displayName;
+                    document.getElementById("dob").value = data.dob || "";
+                    document.getElementById("referral").value = data.referral || "";
+                    selectedGender = data.gender || "";
+                    if (selectedGender === "Nam") document.getElementById("male").classList.add("selected");
+                    if (selectedGender === "Nữ") document.getElementById("female").classList.add("selected");
+                    if (data.avatar) document.getElementById("avatarPreview").src = data.avatar;
+                } else {
+                    document.getElementById("username").value = displayName;
                 }
-
-                usernameInput.value = username || "";
-                if (!username) usernameInput.placeholder = "Nhập tên của bạn";
             }
         });
 
         async function saveProfile() {
             const user = auth.currentUser;
-            if (!user) {
-                alert("Bạn chưa đăng nhập!");
-                return;
-            }
+            if (!user) return alert("Bạn chưa đăng nhập!");
 
             const username = document.getElementById("username").value;
             const dob = document.getElementById("dob").value;
             const referral = document.getElementById("referral").value;
+            if (!selectedGender || !username || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
 
             let avatarUrl = "";
             const file = document.getElementById("avatarInput").files[0];
-
             if (file) {
                 const storageRef = storage.ref("avatars/" + user.uid);
                 await storageRef.put(file);
                 avatarUrl = await storageRef.getDownloadURL();
             }
 
-            await db.collection("users").doc(user.uid).set({
-                name: username,
-                dob: dob,
-                gender: selectedGender,
-                referral: referral,
-                avatar: avatarUrl,
-                email: user.email
-            });
+            await db.collection("users").doc(user.uid).set({ name: username, dob, gender: selectedGender, referral, avatar: avatarUrl, email: user.email });
+            await user.updateProfile({ displayName: username });
 
-            alert("Thông tin đã lưu!");
+            alert("Thông tin đã lưu thành công!");
         }
     </script>
 

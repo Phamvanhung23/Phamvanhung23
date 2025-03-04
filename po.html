@@ -180,43 +180,45 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
+        // Lấy thông tin từ Firebase khi đăng nhập
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const displayName = user.displayName || "";
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                if (userDoc.exists) {
+                    const data = userDoc.data();
+                    document.getElementById("username").value = data.name || displayName;
+                    document.getElementById("dob").value = data.dob || "";
+                    document.getElementById("referral").value = data.referral || "";
+                    selectedGender = data.gender || "";
+                    if (selectedGender === "Nam") document.getElementById("male").classList.add("selected");
+                    if (selectedGender === "Nữ") document.getElementById("female").classList.add("selected");
+                    if (data.avatar) document.getElementById("avatarPreview").src = data.avatar;
+                } else {
+                    document.getElementById("username").value = displayName;
+                }
+            }
+        });
+
         async function saveProfile() {
             const user = auth.currentUser;
-            if (!user) {
-                alert("Bạn chưa đăng nhập!");
-                return;
-            }
+            if (!user) return alert("Bạn chưa đăng nhập!");
 
             const username = document.getElementById("username").value;
             const dob = document.getElementById("dob").value;
             const referral = document.getElementById("referral").value;
-
-            if (!selectedGender) {
-                alert("Vui lòng chọn giới tính!");
-                return;
-            }
-            if (!username || !dob) {
-                alert("Vui lòng nhập đầy đủ thông tin!");
-                return;
-            }
+            if (!selectedGender || !username || !dob) return alert("Vui lòng nhập đầy đủ thông tin!");
 
             let avatarUrl = "";
             const file = document.getElementById("avatarInput").files[0];
-
             if (file) {
                 const storageRef = storage.ref("avatars/" + user.uid);
                 await storageRef.put(file);
                 avatarUrl = await storageRef.getDownloadURL();
             }
 
-            await db.collection("users").doc(user.uid).set({
-                name: username,
-                dob: dob,
-                gender: selectedGender,
-                referral: referral,
-                avatar: avatarUrl,
-                email: user.email
-            });
+            await db.collection("users").doc(user.uid).set({ name: username, dob, gender: selectedGender, referral, avatar: avatarUrl, email: user.email });
+            await user.updateProfile({ displayName: username });
 
             alert("Thông tin đã lưu thành công!");
         }

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+
+    <style>
+        /* Giao diện tổng thể */
+        body {
+            background-color: #1c1b28;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #2a2a3a;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Avatar */
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 15px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #fff;
+            background: #333;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+        .avatar-container:hover {
+            transform: scale(1.1);
+        }
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .upload-icon {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 12px;
+            padding: 5px;
+        }
+        #avatarInput {
+            display: none;
+        }
+
+        /* Giới tính */
+        .gender-box {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .gender-option {
+            width: 120px;
+            padding: 12px;
+            background: #444;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .gender-option:hover {
+            background: #666;
+        }
+        .selected {
+            border: 2px solid #ffcc00;
+            background: #555;
+        }
+
+        /* Input và nút */
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+        }
+        input {
+            background: #333;
+            color: white;
+            outline: none;
+        }
+        button {
+            background: #6a5acd;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #836fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Thông tin cá nhân</h2>
+        <label for="avatarInput">
+            <div class="avatar-container">
+                <img id="avatarPreview" src="default-avatar.png" alt="Avatar">
+                <div class="upload-icon">Chọn ảnh</div>
+            </div>
+        </label>
+        <input type="file" id="avatarInput" accept="image/*" onchange="previewAvatar()">
+
+        <div class="gender-box">
+            <div class="gender-option" id="male" onclick="selectGender('Nam')">♂ Nam</div>
+            <div class="gender-option" id="female" onclick="selectGender('Nữ')">♀ Nữ</div>
+        </div>
+
+        <input type="text" id="username" placeholder="Xưng hô">
+        <input type="date" id="dob">
+        <input type="text" id="referral" placeholder="Mã giới thiệu">
+        <button id="submitBtn" onclick="saveProfile()">Lưu thông tin</button>
+    </div>
+
+    <script>
+        let selectedGender = "";
+
+        function selectGender(gender) {
+            selectedGender = gender;
+            document.getElementById("male").classList.remove("selected");
+            document.getElementById("female").classList.remove("selected");
+            document.getElementById(gender === "Nam" ? "male" : "female").classList.add("selected");
+        }
+
+        function previewAvatar() {
+            const file = document.getElementById("avatarInput").files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById("avatarPreview").src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 🔹 Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCCjtxygWLzP7NmgGESsOr6Gzo9FPXJil0",
+            authDomain: "taixiu-3de40.firebaseapp.com",
+            databaseURL: "https://taixiu-3de40-default-rtdb.firebaseio.com/",
+            projectId: "taixiu-3de40",
+            storageBucket: "taixiu-3de40.appspot.com",
+            messagingSenderId: "1091544270398",
+            appId: "1:1091544270398:web:09b020bac3b997b52bb36f",
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        async function saveProfile() {
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Bạn chưa đăng nhập!");
+                return;
+            }
+
+            const username = document.getElementById("username").value;
+            const dob = document.getElementById("dob").value;
+            const referral = document.getElementById("referral").value;
+
+            if (!selectedGender) {
+                alert("Vui lòng chọn giới tính!");
+                return;
+            }
+            if (!username || !dob) {
+                alert("Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            let avatarUrl = "";
+            const file = document.getElementById("avatarInput").files[0];
+
+            if (file) {
+                const storageRef = storage.ref("avatars/" + user.uid);
+                await storageRef.put(file);
+                avatarUrl = await storageRef.getDownloadURL();
+            }
+
+            await db.collection("users").doc(user.uid).set({
+                name: username,
+                dob: dob,
+                gender: selectedGender,
+                referral: referral,
+                avatar: avatarUrl,
+                email: user.email
+            });
+
+            alert("Thông tin đã lưu thành công!");
+        }
+    </script>
+
+</body>
+</html>

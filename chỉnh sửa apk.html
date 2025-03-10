@@ -7,215 +7,183 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
             text-align: center;
+            margin: 0;
             padding: 20px;
-            background: #1e1e1e;
-            color: #fff;
         }
-        h2 { color: #00c3ff; }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+        }
+        h2, h3 { color: #03dac6; }
         input, button {
-            margin: 10px;
+            width: 100%;
             padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
             border: none;
             border-radius: 5px;
         }
-        input[type="file"] {
-            background: #333;
-            color: #fff;
-            padding: 8px;
-        }
         button {
-            background: #00c3ff;
-            color: #fff;
+            background: #03dac6;
+            color: black;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
         }
-        button:hover { background: #0077b6; }
-        #fileList {
-            text-align: left;
-            width: 80%;
-            margin: auto;
-            max-height: 300px;
+        button:hover { background: #018786; }
+        .file-list {
+            max-height: 200px;
             overflow-y: auto;
-            border: 1px solid #00c3ff;
-            padding: 10px;
-            background: #252525;
+            text-align: left;
         }
-        #fileList li {
-            list-style: none;
-            padding: 8px;
-            border-bottom: 1px solid #444;
+        .file-item {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
             cursor: pointer;
-            transition: 0.3s;
         }
-        #fileList li:hover { background: #0077b6; }
-        textarea {
-            width: 80%;
-            height: 300px;
-            margin-top: 10px;
-            background: #252525;
-            color: #fff;
-            border: 1px solid #00c3ff;
-            padding: 10px;
-            display: none;
+        .file-item:hover {
+            background: #3a3a3a;
+        }
+        .selected {
+            background: #03dac6 !important;
+            color: black;
         }
         img {
-            max-width: 80%;
-            display: none;
+            max-width: 100%;
             margin-top: 10px;
-            border: 2px solid #00c3ff;
             border-radius: 5px;
+            display: none;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: #333;
+            color: white;
+            border: 1px solid #03dac6;
+            border-radius: 5px;
+            padding: 10px;
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>🔧 Chỉnh sửa APK</h2>
+        
+        <input type="file" id="apkInput" accept=".apk">
+        <button onclick="loadAPK()">📂 Giải nén APK</button>
 
-    <h2>📂 Chỉnh sửa file APK trên trình duyệt</h2>
-    <input type="file" id="apkFile" accept=".apk">
-    <button onclick="extractAPK()">📂 Giải nén APK</button>
+        <h3>📁 Danh sách file trong APK:</h3>
+        <div class="file-list" id="fileList"></div>
 
-    <h3>📜 Danh sách file</h3>
-    <ul id="fileList"></ul>
+        <h3>📷 Xem trước file:</h3>
+        <img id="previewImage">
+        <textarea id="editor"></textarea>
 
-    <h3>✍ Chỉnh sửa file</h3>
-    <textarea id="fileContent"></textarea>
-    <img id="imagePreview">
+        <h3>📂 Chọn file thay thế:</h3>
+        <input type="file" id="replaceFileInput">
+        <button onclick="replaceFile()">📝 Thay thế file</button>
 
-    <br>
-    <input type="file" id="replaceFile" style="display:none;" onchange="replaceFile()">
-    <button onclick="saveChanges()">💾 Lưu chỉnh sửa</button>
-    <button onclick="uploadReplacement()">🔄 Thay thế file</button>
-    <button onclick="downloadAPK()">📥 Tải về APK</button>
+        <button onclick="downloadAPK()">📥 Tải APK</button>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script>
-        let extractedFiles = {};
-        let selectedFile = "";
+        let zipFile, selectedFile = null;
 
-        async function extractAPK() {
-            let fileInput = document.getElementById("apkFile");
-            if (!fileInput.files.length) {
-                alert("⚠ Chọn một file APK!");
-                return;
-            }
+        function loadAPK() {
+            let file = document.getElementById('apkInput').files[0];
+            if (!file) return alert("Chọn file APK!");
 
-            let apkFile = fileInput.files[0];
-            let zip = await JSZip.loadAsync(apkFile);
-            extractedFiles = {};
+            let reader = new FileReader();
+            reader.onload = e => {
+                JSZip.loadAsync(e.target.result).then(zip => {
+                    zipFile = zip;
+                    updateFileList();
+                    alert("APK đã giải nén!");
+                }).catch(() => alert("Không thể giải nén APK!"));
+            };
+            reader.readAsArrayBuffer(file);
+        }
 
-            let fileList = document.getElementById("fileList");
-            fileList.innerHTML = "";
-
-            zip.forEach(async (relativePath, file) => {
-                let ext = relativePath.split('.').pop().toLowerCase();
-                if (["txt", "xml", "json", "js"].includes(ext)) {
-                    extractedFiles[relativePath] = await file.async("string");
-                } else if (["png", "jpg", "jpeg"].includes(ext)) {
-                    extractedFiles[relativePath] = await file.async("base64");
-                } else {
-                    extractedFiles[relativePath] = await file.async("uint8array");
-                }
-
-                let li = document.createElement("li");
-                li.textContent = relativePath;
-                li.onclick = () => openFile(relativePath);
-                fileList.appendChild(li);
+        function updateFileList() {
+            let list = document.getElementById('fileList');
+            list.innerHTML = "";
+            Object.keys(zipFile.files).forEach(path => {
+                let div = document.createElement("div");
+                div.className = "file-item";
+                div.innerText = path;
+                div.onclick = () => selectFile(path);
+                list.appendChild(div);
             });
+        }
 
-            alert("✅ Đã giải nén APK! Chọn file để chỉnh sửa.");
+        function selectFile(path) {
+            selectedFile = path;
+            document.querySelectorAll(".file-item").forEach(el => el.classList.remove("selected"));
+            event.target.classList.add("selected");
+            openFile(path);
         }
 
         function openFile(path) {
-            selectedFile = path;
-            let ext = path.split('.').pop().toLowerCase();
-            let textArea = document.getElementById("fileContent");
-            let imgPreview = document.getElementById("imagePreview");
+            zipFile.file(path).async("base64").then(content => {
+                let ext = path.split('.').pop().toLowerCase();
+                let img = document.getElementById("previewImage");
+                let editor = document.getElementById("editor");
 
-            if (["txt", "xml", "json", "js"].includes(ext)) {
-                textArea.value = extractedFiles[path];
-                textArea.style.display = "block";
-                imgPreview.style.display = "none";
-            } else if (["png", "jpg", "jpeg"].includes(ext)) {
-                imgPreview.src = "data:image/" + ext + ";base64," + extractedFiles[path];
-                imgPreview.style.display = "block";
-                textArea.style.display = "none";
-            } else {
-                textArea.value = "[⚠ Không thể chỉnh sửa file này]";
-                textArea.style.display = "block";
-                imgPreview.style.display = "none";
-            }
-        }
-
-        function saveChanges() {
-            if (!selectedFile) {
-                alert("⚠ Chọn một file để chỉnh sửa!");
-                return;
-            }
-            let ext = selectedFile.split('.').pop().toLowerCase();
-            if (["txt", "xml", "json", "js"].includes(ext)) {
-                extractedFiles[selectedFile] = document.getElementById("fileContent").value;
-                alert("✅ Đã lưu chỉnh sửa!");
-            } else {
-                alert("⚠ Chỉ có thể chỉnh sửa file văn bản!");
-            }
-        }
-
-        function uploadReplacement() {
-            if (!selectedFile) {
-                alert("⚠ Chọn một file để thay thế!");
-                return;
-            }
-            document.getElementById("replaceFile").click();
+                if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) {
+                    img.src = "data:image/" + ext + ";base64," + content;
+                    img.style.display = "block";
+                    editor.style.display = "none";
+                } else if (["xml", "txt", "json", "yml", "yaml"].includes(ext)) {
+                    zipFile.file(path).async("string").then(text => {
+                        editor.value = text;
+                        editor.style.display = "block";
+                        img.style.display = "none";
+                    });
+                } else {
+                    img.style.display = "none";
+                    editor.style.display = "none";
+                }
+            }).catch(() => alert("Không thể xem trước file này!"));
         }
 
         function replaceFile() {
-            let fileInput = document.getElementById("replaceFile");
-            if (!fileInput.files.length) return;
+            let file = document.getElementById('replaceFileInput').files[0];
+            if (!file || !selectedFile) return alert("Chọn file trong APK và file thay thế!");
 
-            let newFile = fileInput.files[0];
             let reader = new FileReader();
-
-            reader.onload = function (event) {
-                let ext = selectedFile.split('.').pop().toLowerCase();
-                if (["txt", "xml", "json", "js"].includes(ext)) {
-                    extractedFiles[selectedFile] = event.target.result;
-                } else if (["png", "jpg", "jpeg"].includes(ext)) {
-                    let base64Data = event.target.result.split(',')[1];
-                    extractedFiles[selectedFile] = base64Data;
-                } else {
-                    extractedFiles[selectedFile] = new Uint8Array(event.target.result);
-                }
-                alert("✅ Đã thay thế file thành công!");
+            reader.onload = e => {
+                zipFile.file(selectedFile, e.target.result);
+                alert("Đã thay thế file: " + selectedFile);
+                openFile(selectedFile);
             };
-
-            if (["png", "jpg", "jpeg"].includes(newFile.name.split('.').pop().toLowerCase())) {
-                reader.readAsDataURL(newFile);
-            } else {
-                reader.readAsArrayBuffer(newFile);
-            }
+            reader.readAsArrayBuffer(file);
         }
 
-        async function downloadAPK() {
-            let zip = new JSZip();
-            for (let path in extractedFiles) {
-                let ext = path.split('.').pop().toLowerCase();
-                if (["txt", "xml", "json", "js"].includes(ext)) {
-                    zip.file(path, extractedFiles[path]);
-                } else if (["png", "jpg", "jpeg"].includes(ext)) {
-                    zip.file(path, extractedFiles[path], { base64: true });
-                } else {
-                    zip.file(path, extractedFiles[path]);
-                }
-            }
+        function downloadAPK() {
+            if (!zipFile) return alert("Chưa giải nén APK!");
 
-            let apkBlob = await zip.generateAsync({ type: "blob" });
-            let downloadLink = document.createElement("a");
-            downloadLink.href = URL.createObjectURL(apkBlob);
-            downloadLink.download = "modified.apk";
-            downloadLink.click();
+            zipFile.generateAsync({ type: "blob" }).then(content => {
+                let a = document.createElement("a");
+                a.href = URL.createObjectURL(content);
+                a.download = "modified.apk";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                alert("Tải APK thành công!");
+            }).catch(error => {
+                alert("Lỗi khi nén lại APK: " + error);
+            });
         }
     </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-
 </body>
 </html>
